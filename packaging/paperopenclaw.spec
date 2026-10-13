@@ -16,11 +16,11 @@ tensorflow / torchvision / dask 等重型包一并打进去。本 spec 已用 ex
 
 import os
 
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_all, collect_data_files
 
 repo = os.path.abspath(os.path.join(SPECPATH, ".."))  # noqa: F821
 backend = os.path.join(repo, "backend")
-entry = os.path.join(backend, "paperopenclaw", "desktop.py")
+entry = os.path.join(backend, "paperopenclaw", "server_entry.py")
 web_dist = os.path.join(repo, "web", "dist")
 
 datas = []
@@ -45,6 +45,23 @@ try:
     datas += collect_data_files("jieba")
 except Exception:
     pass
+
+# chromadb 依赖链的数据文件（jsonschema → rfc3987_syntax → lark 的 .lark 语法文件，
+# 以及 opentelemetry 等 chromadb 运行所需子模块），整体收集避免缺文件。
+for pkg in ("chromadb", "jsonschema", "rfc3987", "rfc3987_syntax", "lark",
+            "opentelemetry"):
+    try:
+        d, b, h = collect_all(pkg)
+        datas += d
+        binaries += b
+        hiddenimports += h
+    except Exception:
+        pass
+
+# SQLite schema（package-data，PyInstaller 不自动收集，需显式加入）。
+schema_sql = os.path.join(backend, "paperopenclaw", "storage", "schema.sql")
+if os.path.isfile(schema_sql):
+    datas.append((schema_sql, "paperopenclaw/storage"))
 
 # 前端静态资源。
 if os.path.isdir(web_dist):
@@ -78,13 +95,14 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
+# onedir：产出「文件夹」而非单文件 exe——Python 运行时 + 全部依赖解压在文件夹里，
+# 用户拿到后无需安装 Python / pip，直接运行即可。
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
     [],
-    name="PaperOpenClaw",
+    exclude_binaries=True,
+    name="paperopenclaw-backend",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -95,4 +113,14 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name="paperopenclaw-backend",
 )
