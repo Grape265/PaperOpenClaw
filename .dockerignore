@@ -1,0 +1,17 @@
+# 忽略：数据、缓存、构建产物、测试与临时文件不应进入镜像上下文。
+.git
+.gitignore
+data/
+.cache/
+.tmp/
+.final-check/
+**/__pycache__/
+**/*.pyc
+web/node_modules/
+web/dist/
+tests/
+docs/
+scripts/
+*.md
+*.log
+.pytest_cache/

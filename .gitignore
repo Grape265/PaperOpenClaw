@@ -1,0 +1,51 @@
+# ============================================================================
+# PaperOpenClaw .gitignore
+# 运行时数据、构建产物、依赖缓存一律不入库；源码 + 配置模板 + 文档入库。
+# 注意：gitignore 不支持行内注释，# 必须单独占一行。
+# ============================================================================
+
+# ---- 运行时数据（含 API Key，绝不能入库） ----
+data/
+backend/data/
+*.local.json
+.env
+
+# ---- 依赖与缓存 ----
+node_modules/
+web/node_modules/
+desktop/node_modules/
+.cache/
+.cargo/
+.tmp/
+.final-check/
+.exe-test-data/
+.dsh-*
+
+# ---- 构建产物 ----
+web/dist/
+dist/
+build/
+backend/dist/
+backend/*.egg-info/
+desktop/src-tauri/target/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# ---- 日志与临时 ----
+*.log
+pyinstaller.log
+
+# ---- IDE / 编辑器 ----
+.vscode/
+.idea/
+*.iml
+
+# ---- 操作系统 ----
+.DS_Store
+Thumbs.db

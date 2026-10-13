@@ -1,0 +1,25 @@
+# PaperOpenClaw 单容器部署。
+#
+#   docker compose up -d
+#   open http://localhost:8787
+#
+# 数据与模型用命名卷持久化；API Key 在网页「设置」里填写后写入 /data/config.json。
+services:
+  paperopenclaw:
+    build: .
+    image: paperopenclaw:latest
+    container_name: paperopenclaw
+    ports:
+      - "8787:8787"
+    volumes:
+      - paperopenclaw-data:/data
+      - paperopenclaw-models:/models
+    environment:
+      - PAPEROPENCLAW_DATA_DIR=/data
+      - HF_HOME=/models
+      - HF_ENDPOINT=https://hf-mirror.com
+    restart: unless-stopped
+
+volumes:
+  paperopenclaw-data:
+  paperopenclaw-models:
